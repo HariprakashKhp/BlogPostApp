@@ -34,9 +34,9 @@
   color: #fff;
 }
 
-a,
-a:focus,
-a:hover {
+.link,
+.link:focus,
+.link:hover {
   text-decoration: none;
   color: black;
 }
