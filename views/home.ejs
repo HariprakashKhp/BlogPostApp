@@ -1,10 +1,10 @@
 <%- include("partials/header"); -%>
 
-<% for(let i = 0; i< Posts.length; i++) { %>
-    <a class="link" href="/posts/<%= _.lowerCase(Posts[i].postTitle) %>"><h1><%= Posts[i].postTitle %></h1></a>
+<% for(let i = 0; i< posts.length; i++) { %>
+    <a class="link" href="/posts/<%= posts[i]._id %>"><h1><%= posts[i].title %></h1></a>
     <p>
-            <%= Posts[i].postBody.substring(0, 100) + ". .." %> 
-            <a href="/posts/<%= _.lowerCase(Posts[i].postTitle) %>">Read More</a>
+            <%= posts[i].body.substring(0, 100) + ". .." %> 
+            <a href="/posts/<%= posts[i]._id %>">Read More</a>
     </p>
 <% } %>
 

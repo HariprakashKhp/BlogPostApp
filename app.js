@@ -4,6 +4,25 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const _ = require("lodash");
+const mongoose = require("mongoose");
+
+mongoose
+  .connect("mongodb://localhost:27017/blog")
+  .then(() => console.log("Connected to Database"))
+  .catch((err) => console.error(`Connection to DB failed : ${err}`));
+
+const postSchema = mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, "Post Title is required"],
+  },
+  body: {
+    type: String,
+    required: [true, "Post Body is required"],
+  },
+});
+
+const Post = mongoose.model("post", postSchema);
 
 const homeStartingContent =
   "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
@@ -14,6 +33,8 @@ const contactContent =
 
 const app = express();
 
+app.locals._ = _;
+
 const Posts = [
   {
     postTitle: "Home",
@@ -22,15 +43,13 @@ const Posts = [
   },
 ];
 
-app.locals._ = _;
-
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.render("home.ejs", { Posts });
+  Post.find({}).then((data) => res.render("home.ejs", { posts: data }));
 });
 
 app.get("/about", (req, res) => {
@@ -45,22 +64,26 @@ app.get("/compose", (req, res) => {
   res.render("compose.ejs");
 });
 
-app.get("/posts/:title", (req, res) => {
-  let title = req.params.title;
-  let postData = Posts.filter((post) => {
-    return _.lowerCase(title) === _.lowerCase(post.postTitle);
+app.get("/posts/:id", (req, res) => {
+  let id = req.params.id;
+  console.log(id);
+  // let postData = Posts.filter((post) => {
+  //   return _.lowerCase(title) === _.lowerCase(post.postTitle);
+  // });
+  // let data = postData[0];
+  Post.findOne({ _id: id }).then((data) => {
+    console.log(data);
+    res.render("post", { data });
   });
-  let data = postData[0];
-  res.render("post.ejs", { data });
 });
 
 app.post("/compose", (req, res) => {
   const { postTitle, postBody } = req.body;
-  const post = {
-    postTitle,
-    postBody,
-  };
-  Posts.push(post);
+  let post = new Post({
+    title: postTitle,
+    body: postBody,
+  });
+  post.save();
   res.redirect("/");
 });
 
